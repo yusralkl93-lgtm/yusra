@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Riwayati AI</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            text-align: center;
+            padding: 40px 20px;
+            direction: rtl;
+        }
+
+        h1 {
+            color: #6a3dad;
+        }
+
+        p {
+            font-size: 18px;
+        }
+
+        input {
+            width: 90%;
+            max-width: 500px;
+            padding: 15px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+
+        button {
+            margin-top: 15px;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 10px;
+            background: #6a3dad;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #56308d;
+        }
+
+        #results {
+            max-width: 600px;
+            margin: 30px auto;
+            text-align: right;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            box-shadow: 0 3px 10px #ddd;
+        }
+
+        .card h2 {
+            color: #6a3dad;
+            margin-top: 0;
+        }
+
+        .card p {
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .tags {
+            color: #6a3dad;
+            font-size: 14px;
+        }
+
+        .no-results {
+            text-align: center;
+            color: #777;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>📚 Riwayati AI</h1>
+
+    <p>ماذا تريد أن تقرأ؟</p>
+
+    <input
+        type="text"
+        id="searchInput"
+        placeholder="مثال: أريد رواية مدرسية فيها غيرة"
+    >
+
+    <br>
+
+    <button onclick="searchNovels()">🔍 ابحث</button>
+
+    <div id="results"></div>
+
+    <script>
+
+        let novels = [];
+
+        // تحميل قاعدة الروايات
+        fetch("novels.json")
+            .then(response => response.json())
+            .then(data => {
+                novels = data;
+            })
+            .catch(error => {
+                console.log("حدث خطأ في تحميل الروايات:", error);
+            });
+
+
+        function searchNovels() {
+
+            const searchText =
+                document.getElementById("searchInput").value
+                .toLowerCase()
+                .trim();
+
+            const results =
+                document.getElementById("results");
+
+            if (searchText === "") {
+                results.innerHTML =
+                    '<p class="no-results">اكتبي ما الذي تريدين قراءته أولًا 📚</p>';
+                return;
+            }
+
+            const words = searchText.split(/\s+/);
+
+            const matchedNovels = novels.filter(novel => {
+
+                const information = (
+                    novel.title + " " +
+                    novel.author + " " +
+                    novel.description + " " +
+                    novel.genres.join(" ") + " " +
+                    novel.tags.join(" ")
+                ).toLowerCase();
+
+                return words.some(word =>
+                    information.includes(word)
+                );
+            });
+
+
+            if (matchedNovels.length === 0) {
+
+                results.innerHTML =
+                    '<p class="no-results">لم أجد رواية مطابقة لطلبك حاليًا 😔</p>';
+
+                return;
+            }
+
+
+            results.innerHTML = matchedNovels.map(novel => `
+
+                <div class="card">
+
+                    <h2>${novel.title}</h2>
+
+                    <p>
+                        <strong>الكاتبة:</strong>
+                        ${novel.author}
+                    </p>
+
+                    <p>
+                        ${novel.description}
+                    </p>
+
+                    <p class="tags">
+                        ${novel.genres.join(" • ")}
+                        <br>
+                        ${novel.tags.join(" • ")}
+                    </p>
+
+                    <p>
+                        <strong>الحالة:</strong>
+                        ${novel.status}
+                    </p>
+
+                    ${
+                        novel.url
+                        ? `<a href="${novel.url}" target="_blank">
+                            قراءة الرواية
+                           </a>`
+                        : ""
+                    }
+
+                </div>
+
+            `).join("");
+        }
+
+    </script>
+
+</body>
+</html>
